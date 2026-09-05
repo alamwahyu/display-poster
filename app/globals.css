@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #f7f8fa;
+  color: #17202a;
+}
+
+body.display-surface,
+body.display-surface html {
+  background: #000;
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.display-page {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.display-image {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+.fit-CONTAIN {
+  object-fit: contain;
+}
+
+.fit-COVER {
+  object-fit: cover;
+}
+
+.fit-STRETCH {
+  object-fit: fill;
+}

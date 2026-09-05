@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum PosterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DisplayStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum FitMode {
+  CONTAIN
+  COVER
+  STRETCH
+}
+
+enum Orientation {
+  PORTRAIT
+  LANDSCAPE
+  SQUARE
+}
+
+enum Transition {
+  FADE
+  SLIDE
+  NONE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Poster {
+  id             String          @id @default(cuid())
+  title          String
+  description    String?
+  imageUrl       String          @map("image_url")
+  thumbnailUrl   String?         @map("thumbnail_url")
+  status         PosterStatus    @default(ACTIVE)
+  sortOrder      Int             @default(0) @map("sort_order")
+  duration       Int             @default(10)
+  fitMode        FitMode         @default(CONTAIN) @map("fit_mode")
+  orientation    Orientation     @default(LANDSCAPE)
+  startDate      DateTime?       @map("start_date")
+  endDate        DateTime?       @map("end_date")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  displayPosters DisplayPoster[]
+
+  @@index([status, sortOrder])
+  @@map("posters")
+}
+
+model Display {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String          @unique
+  description    String?
+  status         DisplayStatus   @default(ACTIVE)
+  isDefault      Boolean         @default(false) @map("is_default")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  displayPosters DisplayPoster[]
+  setting        DisplaySetting?
+
+  @@index([status, isDefault])
+  @@map("displays")
+}
+
+model DisplayPoster {
+  id        String   @id @default(cuid())
+  displayId String   @map("display_id")
+  posterId  String   @map("poster_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  display   Display  @relation(fields: [displayId], references: [id], onDelete: Cascade)
+  poster    Poster   @relation(fields: [posterId], references: [id], onDelete: Cascade)
+
+  @@unique([displayId, posterId])
+  @@index([displayId, sortOrder])
+  @@index([posterId])
+  @@map("display_posters")
+}
+
+model DisplaySetting {
+  id                 String     @id @default(cuid())
+  displayId          String     @unique @map("display_id")
+  defaultDuration    Int        @default(10) @map("default_duration")
+  transition         Transition @default(FADE)
+  transitionDuration Int        @default(500) @map("transition_duration")
+  backgroundColor    String     @default("#000000") @map("background_color")
+  defaultFitMode     FitMode    @default(CONTAIN) @map("default_fit_mode")
+  pollingInterval    Int        @default(15) @map("polling_interval")
+  enableFullscreenButton Boolean @default(true) @map("enable_fullscreen_button")
+  hideCursor         Boolean    @default(true) @map("hide_cursor")
+  showEmptyMessage   Boolean    @default(false) @map("show_empty_message")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  display            Display    @relation(fields: [displayId], references: [id], onDelete: Cascade)
+
+  @@map("display_settings")
+}
